@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>State__c</fullName>
+    <description>Draft : Apenas creamos el registro, este estado existe. Hasta que no creemos los registros relacionados con las preguntas y opciones marcadas no podremos evaluarlo. Por eso, necesitamos este primer estado. Una vez que terminemos de crear los registros relacionados con las respuestas a las preguntas podremos pasarlo de estado.
+
+Answered : Se pasará a este estado una vez que hayamos terminado de cargar todas las respuestas para esa unidad.
+
+Success : Caeremos en este estado una vez verificado el resultado y que el mismo sea correcto.
+
+Fail : En el caso de que alguna de las preguntas haya sido respondida incorrectamente.</description>
+    <externalId>false</externalId>
+    <label>State</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Draft</fullName>
+                <default>true</default>
+                <label>Draft</label>
+            </value>
+            <value>
+                <fullName>Answered</fullName>
+                <default>false</default>
+                <label>Answered</label>
+            </value>
+            <value>
+                <fullName>Success</fullName>
+                <default>false</default>
+                <label>Success</label>
+            </value>
+            <value>
+                <fullName>Fail</fullName>
+                <default>false</default>
+                <label>Fail</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

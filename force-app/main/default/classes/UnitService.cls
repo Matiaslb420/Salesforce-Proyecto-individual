@@ -1,7 +1,7 @@
 public with sharing class UnitService {
     public static Boolean UnitService(Id unitId, String JsonAnswer) {
 
-        Database.SavePoint sp = Database.setSavePoint();
+        Savepoint sp = Database.setSavepoint();
 
         try{
             Id UserId = UserInfo.getUserId();
@@ -14,7 +14,7 @@ public with sharing class UnitService {
             Module_Response__c Mresponse = [SELECT Id FROM Module_response__c WHERE (Module__c =: Unit.Module__c AND User__c =: UserId)];
                 
             if(Mresponse == null){
-                Module_Response__c MResponse = new Module_Response__c(
+                MResponse = new Module_Response__c(
                     User__c = UserId, 
                     Module__c = Unit.Module__c, 
                     Status = 'In progress'
@@ -23,7 +23,7 @@ public with sharing class UnitService {
             }
     
             Unit_Response__c UResponse = new Unit_Response__c(
-                State = 'Draft',
+                State__c = 'Draft',
                 Unit__c = unitId,
                 Module_Response__c = MRseponse.Id
             );
@@ -36,7 +36,7 @@ public with sharing class UnitService {
             for(Question__c question : unit.Question_Response__c){
                 if(AnswerMap.containsKey(question.Id)){
                 Question_Response__c questionResp = new Question_Response__c(
-                    Question__c = questionId,
+                    Question__c = question.Id,
                     Unit_Response__c = UResponse.id,
                     Option__c = AnswerMap.get(question.Id)
                 );
@@ -47,12 +47,13 @@ public with sharing class UnitService {
                 }
             }
             insert QuestionRespList;
-            UResponse.Status__c = 'Answered';
+            UResponse.State__c = 'Answered';
             update UResponse;
-        }catch(Exception e){
+        }catch(CustomException e){
             Database.rollback(sp);
             throw e;
 
         }
+        return True;
     }
 }

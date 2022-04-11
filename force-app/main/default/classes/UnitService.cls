@@ -1,4 +1,6 @@
-public with sharing class UnitService {
+public class UnitService {
+    public class WrongDataException extends Exception {}
+
     public static Boolean UnitService(Id unitId, String JsonAnswer) {
 
         Savepoint sp = Database.setSavepoint();
@@ -6,9 +8,9 @@ public with sharing class UnitService {
         try{
             Id UserId = UserInfo.getUserId();
             Unit__c Unit = [ 
-                SELECT Module__c, 
-                (SELECT Id, Name FROM Question__r), 
-                (SELECT Id, Tries FROM Unit_Response__r WHERE Module_Response__r.User__c =: UserId ORDER BY Tries DESC LIMIT 1) 
+                SELECT Module__c,  
+                (SELECT Id, Tries__c FROM Units_Responses__r WHERE Module_Response__r.User__c =: UserId ORDER BY Tries__c DESC LIMIT 1), 
+                (SELECT Id, Name FROM Questions__r)
                 FROM Unit__c WHERE Id = :unitId
             ];
             Module_Response__c Mresponse = [SELECT Id FROM Module_response__c WHERE (Module__c =: Unit.Module__c AND User__c =: UserId)];
@@ -27,13 +29,13 @@ public with sharing class UnitService {
                 Unit__c = unitId,
                 Module_Response__c = MResponse.Id
             );
-            unitResp.Tries__c = !unit.Unit_Response__r.isEmpty() ? unit.Unit_Response__r[0].Tries + 1 : 1;
+            UResponse.Tries__c = !unit.Units_Responses__r.isEmpty() ? unit.Units_Responses__r[0].Tries__c + 1 : 1;
             insert UResponse;
     
             Map<Id, Id> AnswerMap = (Map<Id, Id>)JSON.deserializeStrict(JsonAnswer, Map<Id,Id>.class);
             List<Question_Response__c> QuestionRespList = new List<Question_Response__c>();
     
-            for(Question__c question : unit.Question_Response__r){
+            for(Question__c question : unit.Questions__r){
                 if(AnswerMap.containsKey(question.Id)){
                 Question_Response__c questionResp = new Question_Response__c(
                     Question__c = question.Id,
@@ -43,13 +45,13 @@ public with sharing class UnitService {
                 QuestionRespList.add(questionResp);
                 }
                 else{
-                    throw new CustomException('La pregunta ' + question.Name + ' no fue respondida y es requerida.');
+                    throw new WrongDataException('La pregunta ' + question.Name + ' no fue respondida y es requerida.');
                 }
             }
             insert QuestionRespList;
             UResponse.State__c = 'Answered';
             update UResponse;
-        }catch(CustomException e){
+        }catch(WrongDataException e){
             Database.rollback(sp);
             throw e;
 
